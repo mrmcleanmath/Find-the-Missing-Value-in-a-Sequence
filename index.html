@@ -110,9 +110,9 @@
     <div class="group">
       <div class="label">Sequence Type</div>
       <div class="seg" role="group" aria-label="Sequence Type">
-        <!-- Best of both worlds: correct terms + the operation -->
-        <button class="mode" data-mode="arith" aria-pressed="true">Arithmetic (Add/Subtract)</button>
-        <button class="mode" data-mode="geo" aria-pressed="false">Geometric (Multiply/Divide)</button>
+        <!-- UPDATED: Formal name + definition + operation -->
+        <button class="mode" data-mode="arith" aria-pressed="true">Arithmetic – Common Difference (Add / Subtract)</button>
+        <button class="mode" data-mode="geo" aria-pressed="false">Geometric – Common Ratio (Multiply / Divide)</button>
         <button class="mode" data-mode="mixed" aria-pressed="false">Mixed</button>
       </div>
     </div>
@@ -434,10 +434,10 @@
   function renderWorksheet(n, mode, diff){
     const rows = buildWorksheetRows(n, mode, diff);
 
-    // Updated worksheet labels to match the new button names
+    // UPDATED: worksheet meta label matches new UI text
     const modeLabel =
-      mode==='arith' ? 'Arithmetic (Add/Subtract)' :
-      mode==='geo'   ? 'Geometric (Multiply/Divide)' :
+      mode==='arith' ? 'Arithmetic – Common Difference (Add / Subtract)' :
+      mode==='geo'   ? 'Geometric – Common Ratio (Multiply / Divide)' :
                        'Mixed';
 
     const meta = `Type: ${modeLabel} • Difficulty: ${diff[0].toUpperCase()+diff.slice(1)} • Items: ${n}`;
