@@ -76,10 +76,10 @@
   .small{font-size:.95rem; color:var(--muted)}
   .hide{display:none}
 
-  /* NEW: Bigger worksheet question text (projector-friendly) */
+  /* Bigger worksheet question text (projector-friendly) */
   .wsQ{
-    font-size:1.6rem;           /* bigger, but not huge */
-    font-weight:800;            /* bold for visibility */
+    font-size:1.6rem;
+    font-weight:800;
     line-height:1.35;
     letter-spacing:.2px;
     word-break:break-word;
@@ -91,14 +91,14 @@
     .controls{grid-template-columns:1fr}
     .big{font-size:1.9rem}
     .term{min-width:88px}
-    .wsQ{font-size:1.35rem;}    /* slightly smaller on phones */
+    .wsQ{font-size:1.35rem;}
   }
   @media print{
     #backToGame, #makeSheet, #printSheet, #revealAll, .controls, .score, #game { display:none !important; }
     body{ background:white; color:black; }
     .sheet{ box-shadow:none; }
     table{ font-size:1rem; }
-    .wsQ{ font-size:1.35rem; }  /* printer-friendly size */
+    .wsQ{ font-size:1.35rem; }
   }
 </style>
 </head>
@@ -110,9 +110,9 @@
     <div class="group">
       <div class="label">Sequence Type</div>
       <div class="seg" role="group" aria-label="Sequence Type">
-        <!-- UI avoids the words "arithmetic" / "geometric" -->
-        <button class="mode" data-mode="arith" aria-pressed="true">Add / Subtract</button>
-        <button class="mode" data-mode="geo" aria-pressed="false">Multiply</button>
+        <!-- Best of both worlds: correct terms + the operation -->
+        <button class="mode" data-mode="arith" aria-pressed="true">Arithmetic (Add/Subtract)</button>
+        <button class="mode" data-mode="geo" aria-pressed="false">Geometric (Multiply/Divide)</button>
         <button class="mode" data-mode="mixed" aria-pressed="false">Mixed</button>
       </div>
     </div>
@@ -169,7 +169,7 @@
   </div>
 
   <div class="small mt">
-    Tip: Answers accept either <strong>12.5</strong> or <strong>12,5</strong>. Numbers are displayed with thin spaces for thousands (e.g., 12&nbsp;345).
+    Tip: Answers accept either <strong>12.5</strong> or <strong>12,5</strong>. Numbers are displayed with spaces for thousands (e.g., 12&nbsp;345).
   </div>
 </div>
 
@@ -231,7 +231,7 @@
   }
 
   function makeGeometric(diffLevel){
-    // Keep any required division small (≤ two digits) esp. in easy
+    // Keep any required division small (<= two digits) esp. in easy
     let r, a1;
     if(diffLevel==='easy'){
       const ratios = [2, 3, 4, 0.5]; // only small divisors
@@ -433,7 +433,13 @@
 
   function renderWorksheet(n, mode, diff){
     const rows = buildWorksheetRows(n, mode, diff);
-    const modeLabel = mode==='arith'?'Add / Subtract':mode==='geo'?'Multiply':'Mixed';
+
+    // Updated worksheet labels to match the new button names
+    const modeLabel =
+      mode==='arith' ? 'Arithmetic (Add/Subtract)' :
+      mode==='geo'   ? 'Geometric (Multiply/Divide)' :
+                       'Mixed';
+
     const meta = `Type: ${modeLabel} • Difficulty: ${diff[0].toUpperCase()+diff.slice(1)} • Items: ${n}`;
     qs('#sheetMeta').textContent = meta;
 
@@ -445,10 +451,10 @@
 
     rows.forEach((r,idx)=>{
       const tr = document.createElement('tr');
-      const td1 = document.createElement('td'); 
-      td1.className = 'wsQ';                                 // << bigger projector text
+      const td1 = document.createElement('td');
+      td1.className = 'wsQ';
       td1.textContent = `${idx+1}.  ${r.line}`;
-      const td2 = document.createElement('td'); 
+      const td2 = document.createElement('td');
       td2.className = 'wsA';
       td2.textContent = ''; // blank until reveal
       td2.setAttribute('data-answer', String(r.answer)); // store raw
