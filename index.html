@@ -13,14 +13,16 @@
     --accent:#6ea8ff;
     --good:#34d399;
     --bad:#f87171;
+    --border:#1c2650;
   }
   *{box-sizing:border-box}
   body{
     margin:0; background:var(--bg); color:var(--ink);
-    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
+    line-height:1.5;
   }
   .wrap{max-width:1100px; margin:0 auto; padding:28px 16px;}
-  h1{font-size:2.2rem; margin:0 0 8px;}
+  h1{font-size:2.2rem; margin:0 0 8px; letter-spacing:.3px}
   .row{display:flex; flex-wrap:wrap; gap:12px; align-items:center}
   .card{
     background:var(--panel);
@@ -30,16 +32,18 @@
   }
   .controls{display:grid; grid-template-columns: 1fr 1fr 1fr; gap:12px}
   .group{display:flex; gap:8px; flex-wrap:wrap; align-items:center}
-  .label{font-weight:600; color:var(--muted);}
-  .seg{display:flex; background:#0d142b; padding:6px; border-radius:14px; gap:6px}
+  .label{font-weight:600; color:var(--muted); font-size:1rem}
+  .seg{display:flex; background:#0d142b; padding:6px; border-radius:14px; gap:6px; flex-wrap:wrap}
   .seg button{
     border:0; padding:12px 14px; border-radius:10px; font-weight:700;
-    background:transparent; color:var(--ink); cursor:pointer;
+    background:transparent; color:var(--ink); cursor:pointer; font-size:1.05rem;
   }
   .seg button[aria-pressed="true"]{background:var(--accent); color:#071128}
-  .big{font-size:2.4rem; text-align:center;}
+  .big{
+    font-size:2.4rem; text-align:center; letter-spacing:.5px;
+  }
   .sequence{
-    display:flex; justify-content:center; gap:22px; flex-wrap:wrap;
+    display:flex; justify-content:center; align-items:center; gap:22px; flex-wrap:wrap;
     padding:18px; border-radius:16px; background:#0d142b; margin-top:10px;
   }
   .term{min-width:120px; text-align:center; font-weight:800}
@@ -48,7 +52,9 @@
   input.answer{
     width:320px; max-width:100%; font-size:2rem; padding:14px 16px;
     border-radius:14px; border:2px solid #1e2b55; background:#0b122a; color:#e8ecff;
+    outline:none;
   }
+  input.answer:focus{border-color:var(--accent)}
   .btn{
     border:0; padding:14px 18px; border-radius:14px; font-weight:800; cursor:pointer;
     font-size:1.2rem; background:var(--accent); color:#071128;
@@ -57,159 +63,467 @@
   .btn.ghost{background:transparent; border:2px solid #273366; color:#e8ecff}
   .feedback{font-size:1.35rem; margin-top:12px; min-height:1.6em}
   .ok{color:var(--good)} .no{color:var(--bad)}
-  .score{font-weight:800;}
+  .score{font-weight:800; letter-spacing:.3px}
+  .flex-between{display:flex; justify-content:space-between; align-items:center; gap:12px}
   .stack{display:flex; flex-direction:column; gap:14px}
   .mt{margin-top:16px}
   .mt2{margin-top:24px}
-  .sheet{background:var(--panel); border-radius:18px; padding:18px;}
+  .sheet{
+    background:var(--panel); border-radius:18px; padding:18px;
+  }
+  .sheet h2{margin:0 0 10px}
   table{width:100%; border-collapse:collapse; font-size:1.25rem}
-  th, td{border-bottom:1px solid #1c2650; padding:10px 8px;}
+  th, td{border-bottom:1px solid var(--border); padding:10px 8px; text-align:left; vertical-align:top}
   .small{font-size:.95rem; color:var(--muted)}
   .hide{display:none}
+
+  /* Bigger worksheet question text (projector-friendly) */
+  .wsQ{
+    font-size:1.6rem;
+    font-weight:800;
+    line-height:1.35;
+    letter-spacing:.2px;
+    word-break:break-word;
+  }
+  /* Keep answers normal size so reveal stays neat */
+  .wsA{font-size:1.1rem;}
+
+  @media (max-width:700px){
+    .controls{grid-template-columns:1fr}
+    .big{font-size:1.9rem}
+    .term{min-width:88px}
+    .wsQ{font-size:1.35rem;}
+  }
+  @media print{
+    #backToGame, #makeSheet, #printSheet, #revealAll, .controls, .score, #game { display:none !important; }
+    body{ background:white; color:black; }
+    .sheet{ box-shadow:none; }
+    table{ font-size:1rem; }
+    .wsQ{ font-size:1.35rem; }
+  }
 </style>
 </head>
 <body>
 <div class="wrap">
-<h1>Find the Missing Number in the Sequence</h1>
+  <h1>Find the Missing Number in the Sequence</h1>
 
-<div class="card controls">
-<div class="group">
-<div class="label">Sequence Type</div>
-<div class="seg">
-<!-- ✅ EXACTLY WHAT YOU REQUESTED -->
-<button class="mode" data-mode="arith" aria-pressed="true">Common Difference (Add / Subtract)</button>
-<button class="mode" data-mode="geo">Common Ratio (Multiply / Divide)</button>
-<button class="mode" data-mode="mixed">Mixed</button>
-</div>
-</div>
+  <div class="card controls">
+    <div class="group">
+      <div class="label">Sequence Type</div>
+      <div class="seg" role="group" aria-label="Sequence Type">
+        <button class="mode" data-mode="arith" aria-pressed="true">Common Difference (Add / Subtract)</button>
+        <button class="mode" data-mode="geo" aria-pressed="false">Common Ratio (Multiply / Divide)</button>
+        <button class="mode" data-mode="mixed" aria-pressed="false">Mixed</button>
+      </div>
+    </div>
 
-<div class="group">
-<div class="label">Difficulty</div>
-<div class="seg">
-<button class="diff" data-diff="easy" aria-pressed="true">Easy</button>
-<button class="diff" data-diff="medium">Medium</button>
-<button class="diff" data-diff="hard">Hard</button>
-</div>
-</div>
+    <div class="group">
+      <div class="label">Difficulty</div>
+      <div class="seg" role="group" aria-label="Difficulty">
+        <button class="diff" data-diff="easy" aria-pressed="true">Easy</button>
+        <button class="diff" data-diff="medium" aria-pressed="false">Medium</button>
+        <button class="diff" data-diff="hard" aria-pressed="false">Hard</button>
+      </div>
+    </div>
 
-<div class="group">
-<div class="label">Worksheet</div>
-<div class="seg">
-<button class="sheet-size" data-n="5">5</button>
-<button class="sheet-size" data-n="10">10</button>
-<button class="sheet-size" data-n="15">15</button>
-</div>
-<button id="makeSheet" class="btn ghost">Create Worksheet</button>
-</div>
-</div>
+    <div class="group">
+      <div class="label">Worksheet</div>
+      <div class="seg" role="group" aria-label="Worksheet size">
+        <button class="sheet-size" data-n="5" aria-pressed="false">5</button>
+        <button class="sheet-size" data-n="10" aria-pressed="false">10</button>
+        <button class="sheet-size" data-n="15" aria-pressed="false">15</button>
+      </div>
+      <button id="makeSheet" class="btn ghost">Create Worksheet</button>
+    </div>
+  </div>
 
-<div id="game" class="card mt2">
-<div class="score">Score: <span id="score">0</span>/<span id="attempts">0</span></div>
+  <div id="game" class="card mt2">
+    <div class="flex-between">
+      <div class="score">Score: <span id="score">0</span>/<span id="attempts">0</span></div>
+    </div>
 
-<div class="stack mt">
-<div class="big">Enter the missing value.</div>
-<div id="sequence" class="sequence big"></div>
+    <div class="stack mt">
+      <div id="prompt" class="big">Enter the missing value.</div>
+      <div id="sequence" class="sequence big" aria-live="polite"></div>
 
-<div class="row">
-<input id="answer" class="answer" placeholder="Type your answer…" />
-<button id="submitBtn" class="btn">Submit</button>
-<button id="nextBtn" class="btn secondary">Next</button>
-</div>
+      <div class="row">
+        <input id="answer" class="answer" inputmode="decimal" autocomplete="off" placeholder="Type your answer..." />
+        <button id="submitBtn" class="btn">Submit</button>
+        <button id="nextBtn" class="btn secondary">Next</button>
+      </div>
 
-<div id="feedback" class="feedback"></div>
-</div>
-</div>
+      <div id="feedback" class="feedback"></div>
+    </div>
+  </div>
 
-<div id="worksheetView" class="sheet mt2 hide">
-<h2>Worksheet — Missing Number</h2>
-<div id="sheetMeta" class="small"></div>
-<div id="sheetTableWrap" class="mt"></div>
-</div>
+  <div id="worksheetView" class="sheet mt2 hide">
+    <div class="flex-between">
+      <h2>Worksheet - Missing Number</h2>
+      <div class="row">
+        <button id="revealAll" class="btn">Reveal All Answers</button>
+        <button id="printSheet" class="btn secondary">Print</button>
+        <button id="backToGame" class="btn">Back to Game</button>
+      </div>
+    </div>
+    <div class="small" id="sheetMeta"></div>
+    <div id="sheetTableWrap" class="mt"></div>
+  </div>
 
+  <div class="small mt">
+    Tip: Answers accept either <strong>12.5</strong> or <strong>12,5</strong>. Numbers are displayed with spaces for thousands (e.g., 12 345).
+  </div>
 </div>
 
 <script>
-(()=>{
-const rnd=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
-const choice=a=>a[rnd(0,a.length-1)];
+(() => {
+  // ===== Utilities =====
+  const rnd = (a,b)=> Math.floor(Math.random()*(b-a+1))+a;
+  const choice = arr => arr[rnd(0,arr.length-1)];
 
-function format(n){
-let s=Math.round(n*10000)/10000+"";
-let [i,f=""]=s.split(".");
-i=i.replace(/\B(?=(\d{3})+(?!\d))/g," ");
-return i+(f?"."+f.replace(/0+$/,""):"");
-}
+  // Format with space as thousands separator, dot as decimal point
+  function formatNumber(n){
+    const isInt = Math.abs(n - Math.round(n)) < 1e-12;
+    let s = isInt ? String(Math.round(n)) : (Math.round(n*10000)/10000).toString();
+    if(s.includes('e') || s.includes('E')){ s = Number(n).toFixed(4); }
+    s = s.replace(',', '.');
+    let parts = s.split('.');
+    let intp = parts[0];
+    let frac = parts[1] || '';
+    const neg = intp.startsWith('-');
+    if(neg) intp = intp.slice(1);
+    intp = intp.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+    let out = (neg?'-':'') + intp + (frac ? ('.' + frac.replace(/0+$/,'')) : '');
+    if(out.endsWith('.')) out = out.slice(0,-1);
+    return out;
+  }
 
-function parse(v){
-return Number(v.replace(",","."));}
+  // Parse user input allowing comma decimal
+  function parseAnswer(v){
+    if(typeof v !== 'string') return NaN;
+    const s = v.trim().replace(/\s+/g,'').replace(',','.');
+    if(s==='') return NaN;
+    const x = Number(s);
+    return Number.isFinite(x)? x : NaN;
+  }
 
-function makeA(diff){
-let d=choice([1,2,3,4,5,6,7,8,9,10])*choice([1,-1]);
-let start=rnd(5,50);
-let miss=choice([1,2,3]);
-let seq=[];
-for(let i=0;i<5;i++) seq.push(start+i*d);
-return {seq,miss,ans:seq[miss]};
-}
+  function nearlyEqual(a,b,eps=1e-9){
+    return Math.abs(a-b) <= eps;
+  }
 
-function makeG(){
-let r=choice([2,3,4,0.5]);
-let a1=choice([2,4,6,8,12,16]);
-let miss=choice([1,2,3]);
-let seq=[];
-for(let i=0;i<5;i++) seq.push(a1*Math.pow(r,i));
-return {seq,miss,ans:seq[miss]};
-}
+  // ===== Sequence Generators =====
+  // Easy: mostly clean integers, no negatives, simple steps/ratios
+  // Medium: allow negatives, larger numbers, still mostly clean
+  // Hard: allow decimals and negative ratios (for geometric)
 
-let current=null,score=0,attempts=0;
+  function makeArithmetic(diffLevel){
+    let start, d;
 
-const seqDiv=document.getElementById("sequence");
-const feedback=document.getElementById("feedback");
-const ans=document.getElementById("answer");
+    if(diffLevel === 'easy'){
+      d = choice([1,2,3,4,5,6,7,8,9,10]) * choice([1,-1]);
+      start = rnd(5,50); // positive only
+    } else if(diffLevel === 'medium'){
+      d = choice([ -15,-12,-10,-8,-6,-5,-4,-3,-2,2,3,4,5,6,8,10,12,15 ]);
+      start = rnd(-50,100); // allow negatives
+    } else { // hard
+      const diffs = [ -10,-7.5,-5,-2.5,-2,-1.5,-1,-0.75,-0.5,-0.25, 0.25,0.5,0.75,1,1.5,2,2.5,5,7.5,10 ];
+      d = choice(diffs);
+      const starts = [ -100,-75,-50,-25,-12.5,-10,-7.5,-5,-2.5,0,2.5,5,7.5,10,12.5,25,50,75,100 ];
+      start = choice(starts);
+    }
 
-function newQ(){
-let mode=document.querySelector(".mode[aria-pressed='true']").dataset.mode;
-current=mode==="geo"?makeG():makeA();
-render();
-feedback.textContent="";
-ans.value="";
-}
+    const posMissing = choice([1,2,3]); // avoid endpoints
+    const seq = [];
+    for(let i=0;i<5;i++){ seq.push(start + i*d); }
+    const answer = seq[posMissing];
+    const pretty = seq.map((v,i)=> i===posMissing ? '?' : formatNumber(v));
+    return {seq: pretty, rawSeq: seq, missingIndex: posMissing, answer, type:'arith', meta:{d}};
+  }
 
-function render(){
-seqDiv.innerHTML="";
-current.seq.forEach((v,i)=>{
-if(i>0){let c=document.createElement("div");c.className="eq";c.textContent=",";seqDiv.appendChild(c);}
-let d=document.createElement("div");
-d.className="term"+(i===current.miss?" missing":"");
-d.textContent=i===current.miss?"?":format(v);
-seqDiv.appendChild(d);
-});
-}
+  function makeGeometric(diffLevel){
+    let r, a1;
 
-function check(){
-let v=parse(ans.value);
-attempts++;
-let correct=Math.abs(v-current.ans)<1e-6;
-let terms=seqDiv.querySelectorAll(".term");
-terms[current.miss].textContent=format(current.ans);
-if(correct){score++;feedback.innerHTML="<span class='ok'>Correct!</span>";}
-else{feedback.innerHTML="<span class='no'>Correct answer: "+format(current.ans)+"</span>";}
-document.getElementById("score").textContent=score;
-document.getElementById("attempts").textContent=attempts;
-}
+    if(diffLevel === 'easy'){
+      const ratios = [2, 3, 4, 0.5]; // friendly division only
+      r = choice(ratios);
 
-document.querySelectorAll(".mode").forEach(b=>{
-b.onclick=()=>{
-document.querySelectorAll(".mode").forEach(x=>x.setAttribute("aria-pressed","false"));
-b.setAttribute("aria-pressed","true");
-newQ();
-};
-});
+      if(r === 0.5){
+        a1 = choice([16, 24, 32, 40, 48, 60, 72, 96]);
+      } else if(r === 3){
+        a1 = choice([1, 2, 3, 6, 9, 12]);
+      } else if(r === 4){
+        a1 = choice([1, 2, 3, 4, 6, 8]);
+      } else { // 2
+        a1 = choice([1,2,3,4,5,6,8,10,12,15,20]);
+      }
+    } else if(diffLevel === 'medium'){
+      const ratios = [3, 1/3, 2, 1/2, 4];
+      r = choice(ratios);
 
-document.getElementById("submitBtn").onclick=check;
-document.getElementById("nextBtn").onclick=newQ;
+      if(r === 1/3){ a1 = choice([81, 243, 729]); }
+      else if(r === 1/2){ a1 = choice([64, 96, 128, 160, 192]); }
+      else if(r === 4){ a1 = choice([1, 2, 3]); }
+      else if(r === 3){ a1 = choice([1, 3, 6, 9]); }
+      else { a1 = choice([6, 8, 10, 12, 15]); }
+    } else { // hard
+      const ratios = [-2, -0.5, 4, 0.25, 2, -4];
+      r = choice(ratios);
 
-newQ();
+      if(r === 0.25){ a1 = choice([128, 64, 32, 16]); }
+      else if(r === -0.5){ a1 = choice([160, 80, 40, 20]); }
+      else if(r === -2){ a1 = choice([3, 6, 9, 12]); }
+      else if(r === -4){ a1 = choice([1, 2, 3]); }
+      else if(r === 4){ a1 = choice([0.5, 1, 1.5, 2]); } // decimals allowed
+      else { a1 = choice([12.5, 25, 37.5, 50]); } // decimals allowed
+    }
+
+    const posMissing = choice([1,2,3]);
+    const seq = [];
+    for(let i=0;i<5;i++){ seq.push(a1 * Math.pow(r,i)); }
+    const answer = seq[posMissing];
+    const pretty = seq.map((v,i)=> i===posMissing ? '?' : formatNumber(v));
+    return {seq: pretty, rawSeq: seq, missingIndex: posMissing, answer, type:'geo', meta:{r}};
+  }
+
+  function makeQuestion(mode, diff){
+    let actualMode = mode;
+
+    if(mode === 'mixed'){
+      if(diff === 'easy'){
+        // 70% arithmetic, 30% geometric
+        actualMode = Math.random() < 0.7 ? 'arith' : 'geo';
+      } else {
+        actualMode = Math.random() < 0.5 ? 'arith' : 'geo';
+      }
+    }
+
+    return (actualMode === 'arith') ? makeArithmetic(diff) : makeGeometric(diff);
+  }
+
+  // ===== State & DOM =====
+  const qs = sel => document.querySelector(sel);
+  const qsa = sel => Array.from(document.querySelectorAll(sel));
+
+  let current = null;
+  let score = 0, attempts = 0;
+  let readyForNext = false;
+
+  const sequenceDiv = qs('#sequence');
+  const feedbackDiv = qs('#feedback');
+  const scoreSpan = qs('#score');
+  const attemptsSpan = qs('#attempts');
+  const answerInput = qs('#answer');
+  const submitBtn = qs('#submitBtn');
+  const nextBtn = qs('#nextBtn');
+
+  // Control handlers (mode)
+  qsa('.mode').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      qsa('.mode').forEach(b=>b.setAttribute('aria-pressed','false'));
+      btn.setAttribute('aria-pressed','true');
+      newQ();
+    });
+  });
+
+  // Control handlers (difficulty) - THIS is what was missing in the broken version
+  qsa('.diff').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      qsa('.diff').forEach(b=>b.setAttribute('aria-pressed','false'));
+      btn.setAttribute('aria-pressed','true');
+      newQ();
+    });
+  });
+
+  function getMode(){
+    const b = qsa('.mode').find(x=>x.getAttribute('aria-pressed')==='true');
+    return b ? b.dataset.mode : 'arith';
+  }
+  function getDiff(){
+    const b = qsa('.diff').find(x=>x.getAttribute('aria-pressed')==='true');
+    return b ? b.dataset.diff : 'easy';
+  }
+
+  function renderSequence(pretty){
+    sequenceDiv.innerHTML = '';
+    for(let i=0;i<5;i++){
+      if(i>0){
+        const sep = document.createElement('div');
+        sep.className='eq';
+        sep.textContent=',';
+        sequenceDiv.appendChild(sep);
+      }
+      const d = document.createElement('div');
+      d.className = 'term' + (pretty[i]==='?' ? ' missing':'');
+      d.textContent = pretty[i];
+      sequenceDiv.appendChild(d);
+    }
+  }
+
+  function modeLabel(mode){
+    if(mode === 'arith') return 'Common Difference (Add / Subtract)';
+    if(mode === 'geo') return 'Common Ratio (Multiply / Divide)';
+    return 'Mixed';
+  }
+
+  function explanation(q){
+    // Keep the explanation mathematically correct while staying student-friendly
+    if(q.type === 'arith'){
+      const d = q.meta && typeof q.meta.d !== 'undefined' ? q.meta.d : 0;
+      return `Common difference: <strong>d = ${formatNumber(d)}</strong>.`;
+    } else {
+      const r = q.meta && typeof q.meta.r !== 'undefined' ? q.meta.r : 0;
+      return `Common ratio: <strong>r = ${formatNumber(r)}</strong>.`;
+    }
+  }
+
+  function newQ(){
+    current = makeQuestion(getMode(), getDiff());
+    renderSequence(current.seq);
+    feedbackDiv.textContent = '';
+    answerInput.value = '';
+    readyForNext = false;
+    answerInput.focus();
+  }
+
+  function check(){
+    if(!current) return;
+
+    const raw = answerInput.value;
+    const val = parseAnswer(raw);
+
+    if(readyForNext){
+      newQ();
+      return;
+    }
+
+    if(!Number.isFinite(val)){
+      feedbackDiv.innerHTML = '<span class="no">Please enter a valid number.</span>';
+      return;
+    }
+
+    attempts++;
+    const isCorrect = nearlyEqual(val, current.answer, 1e-6);
+
+    // reveal in sequence
+    const i = current.missingIndex;
+    const kids = sequenceDiv.querySelectorAll('.term');
+    kids[i].textContent = formatNumber(current.answer);
+    kids[i].classList.remove('missing');
+
+    if(isCorrect){
+      score++;
+      feedbackDiv.innerHTML = `<span class="ok">Correct!</span> The missing term is <strong>${formatNumber(current.answer)}</strong>. ${explanation(current)}`;
+      readyForNext = true;
+      answerInput.blur();
+    }else{
+      feedbackDiv.innerHTML = `<span class="no">Not quite.</span> Correct answer: <strong>${formatNumber(current.answer)}</strong>. ${explanation(current)}`;
+      readyForNext = false;
+    }
+
+    scoreSpan.textContent = score;
+    attemptsSpan.textContent = attempts;
+  }
+
+  submitBtn.addEventListener('click', check);
+  nextBtn.addEventListener('click', newQ);
+
+  // Enter key: submit; if previous was correct, Enter goes next
+  answerInput.addEventListener('keydown', e=>{
+    if(e.key === 'Enter'){
+      e.preventDefault();
+      if(readyForNext){ newQ(); }
+      else{ check(); }
+    }
+  });
+
+  // ===== Worksheet Mode =====
+  qsa('.sheet-size').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      qsa('.sheet-size').forEach(b=>b.setAttribute('aria-pressed','false'));
+      btn.setAttribute('aria-pressed','true');
+    });
+  });
+
+  function getSheetSize(){
+    const b = qsa('.sheet-size').find(x=>x.getAttribute('aria-pressed')==='true');
+    return b ? parseInt(b.dataset.n,10) : 5;
+  }
+
+  function buildWorksheetRows(n, mode, diff){
+    const rows = [];
+    for(let i=0;i<n;i++){
+      const q = makeQuestion(mode, diff);
+      const line = q.seq.join(' ');
+      rows.push({ line, answer: q.answer });
+    }
+    return rows;
+  }
+
+  function renderWorksheet(n, mode, diff){
+    const rows = buildWorksheetRows(n, mode, diff);
+
+    const meta = `Type: ${modeLabel(mode)} | Difficulty: ${diff[0].toUpperCase()+diff.slice(1)} | Items: ${n}`;
+    qs('#sheetMeta').textContent = meta;
+
+    const tbl = document.createElement('table');
+    const thead = document.createElement('thead');
+    thead.innerHTML = `<tr><th style="width:70%">Sequence</th><th>Answer</th></tr>`;
+    tbl.appendChild(thead);
+
+    const tbody = document.createElement('tbody');
+
+    rows.forEach((r,idx)=>{
+      const tr = document.createElement('tr');
+      const td1 = document.createElement('td');
+      td1.className = 'wsQ';
+      td1.textContent = `${idx+1}.  ${r.line}`;
+      const td2 = document.createElement('td');
+      td2.className = 'wsA';
+      td2.textContent = ''; // blank until reveal
+      td2.setAttribute('data-answer', String(r.answer)); // store raw
+      tr.appendChild(td1);
+      tr.appendChild(td2);
+      tbody.appendChild(tr);
+    });
+
+    tbl.appendChild(tbody);
+
+    const wrap = qs('#sheetTableWrap');
+    wrap.innerHTML = '';
+    wrap.appendChild(tbl);
+
+    // toggle views
+    qs('#game').classList.add('hide');
+    qs('#worksheetView').classList.remove('hide');
+    window.scrollTo({top:0, behavior:'smooth'});
+
+    // Reveal All fills answers
+    qs('#revealAll').onclick = () => {
+      tbody.querySelectorAll('td[data-answer]').forEach(td=>{
+        const val = Number(td.getAttribute('data-answer'));
+        td.textContent = formatNumber(val);
+      });
+    };
+  }
+
+  qs('#makeSheet').addEventListener('click', ()=>{
+    const n = getSheetSize();
+    const mode = getMode();
+    const diff = getDiff();
+    renderWorksheet(n, mode, diff);
+  });
+
+  qs('#backToGame').addEventListener('click', ()=>{
+    qs('#worksheetView').classList.add('hide');
+    qs('#game').classList.remove('hide');
+    newQ();
+    answerInput.focus();
+  });
+
+  qs('#printSheet').addEventListener('click', ()=> window.print());
+
+  // ===== Kickoff =====
+  newQ();
+
 })();
 </script>
 </body>
